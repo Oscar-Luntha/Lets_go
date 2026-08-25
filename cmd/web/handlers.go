@@ -8,16 +8,16 @@ import (
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
-	fmt.Fprintf(w, "Snippet home page")
+	w.Write([]byte("Snippet home page"))
 }
 
 func getSnippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Display form for creating snippet")
+	w.Write([]byte("Snippet Creating form page"))
 }
 func postSnippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "Display form for creating snippet")
+	w.Write([]byte("Snippet Creating post"))
 }
 func snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
