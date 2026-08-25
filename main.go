@@ -19,9 +19,9 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippetView", snippetView)
-	mux.HandleFunc("/snippetCreate", snippetCreate)
+	mux.HandleFunc("/{$}", home)
+	mux.HandleFunc("/snippet/view", snippetView)
+	mux.HandleFunc("/snippet/create", snippetCreate)
 
 	fmt.Println("Server listening on port 4000")
 	err := http.ListenAndServe(":4000", mux)
