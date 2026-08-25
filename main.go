@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, welcome to the Snippet home page"))
 }
 func snippetView(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Specific snippet view"))
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+	msg := fmt.Sprintf("Showing snippet for specific id .... %d", id)
+	w.Write([]byte(msg))
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +27,7 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/view", snippetView)
+	mux.HandleFunc("/snippet/view/{id}", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
 	fmt.Println("Server listening on port 4000")
