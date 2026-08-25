@@ -9,6 +9,14 @@ import (
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, welcome to the home page"))
 }
+func snippetView(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Specific snippet view"))
+}
+
+func snippetCreate(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Display form for creating a snippet"))
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
