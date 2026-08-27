@@ -32,8 +32,17 @@ func (app *application) getSnippetCreate(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte("Snippet Creating form page"))
 }
 func (app *application) postSnippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Snippet Creating post"))
+	title := "0 snail"
+	content := "0 snal \nClimb Mount fuhi, \nBut slowly, slowly??"
+	expires := 7
+
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
