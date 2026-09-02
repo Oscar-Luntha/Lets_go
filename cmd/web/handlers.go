@@ -31,20 +31,25 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getSnippetCreate(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Form = snippetCreateForm{
+		Expires: 365,
+	}
 	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
 func (app *application) postSnippetCreate(w http.ResponseWriter, r *http.Request) {
+
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-
+	//get expires form the form
 	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
+	//create an instance of snippetcreate form struct containing values
 	form := snippetCreateForm{
 		Title:       r.PostForm.Get("title"),
 		Content:     r.PostForm.Get("content"),
@@ -52,19 +57,18 @@ func (app *application) postSnippetCreate(w http.ResponseWriter, r *http.Request
 		FieldErrors: map[string]string{},
 	}
 
-	fieldErrors := make(map[string]string)
 	if strings.TrimSpace(form.Title) == "" {
-		fieldErrors["title"] = "This can not be blank"
+		form.FieldErrors["title"] = "This can not be blank"
 	} else if utf8.RuneCountInString(form.Title) > 100 {
-		fieldErrors["title"] = "This field cannot be of more than 100 characters long"
+		form.FieldErrors["title"] = "This field cannot be of more than 100 characters long"
 	}
 
 	if strings.TrimSpace(form.Content) == "" {
-		fieldErrors["content"] = "This field cannot be blank"
+		form.FieldErrors["content"] = "This field cannot be blank"
 	}
 
 	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
-		fieldErrors["expires"] = "This field must equal 1, 7 or 365"
+		form.FieldErrors["expires"] = "This field must equal 1, 7 or 365"
 	}
 	if len(form.FieldErrors) > 0 {
 		data := app.newTemplateData(r)
