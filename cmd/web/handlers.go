@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"oscar.dev/github.com/lets_go/internal/models"
 )
@@ -21,20 +23,46 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getSnippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Snippet Creating form page"))
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "create.tmpl.html", data)
 }
 func (app *application) postSnippetCreate(w http.ResponseWriter, r *http.Request) {
-	title := "0 snail"
-	content := "0 snal \nClimb Mount fuhi, \nBut slowly, slowly??"
-	expires := 7
-
-	id, err := app.snippets.Insert(title, content, expires)
+	err := r.ParseForm()
 	if err != nil {
-		app.serverError(w, r, err)
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
+	fieldErrors := make(map[string]string)
+	if strings.TrimSpace(title) == "" {
+		fieldErrors["title"] = "This can not be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		fieldErrors["title"] = "This field cannot be of more than 100 characters long"
+	}
+
+	if strings.TrimSpace(content) == "" {
+		fieldErrors["content"] = "This field cannot be blank"
+	}
+
+	if expires != 1 && expires != 7 && expires != 365 {
+		fieldErrors["expires"] = "This field must equal 1, 7 or 365"
+	}
+	if len(fieldErrors) > 0 {
+		fmt.Fprint(w, fieldErrors)
+		return
+	}
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
