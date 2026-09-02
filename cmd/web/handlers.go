@@ -39,36 +39,42 @@ func (app *application) postSnippetCreate(w http.ResponseWriter, r *http.Request
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
 
 	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
+	form := snippetCreateForm{
+		Title:       r.PostForm.Get("title"),
+		Content:     r.PostForm.Get("content"),
+		Expires:     expires,
+		FieldErrors: map[string]string{},
+	}
 
 	fieldErrors := make(map[string]string)
-	if strings.TrimSpace(title) == "" {
+	if strings.TrimSpace(form.Title) == "" {
 		fieldErrors["title"] = "This can not be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
+	} else if utf8.RuneCountInString(form.Title) > 100 {
 		fieldErrors["title"] = "This field cannot be of more than 100 characters long"
 	}
 
-	if strings.TrimSpace(content) == "" {
+	if strings.TrimSpace(form.Content) == "" {
 		fieldErrors["content"] = "This field cannot be blank"
 	}
 
-	if expires != 1 && expires != 7 && expires != 365 {
+	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
 		fieldErrors["expires"] = "This field must equal 1, 7 or 365"
 	}
-	if len(fieldErrors) > 0 {
-		fmt.Fprint(w, fieldErrors)
+	if len(form.FieldErrors) > 0 {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, r, http.StatusUnprocessableEntity, "create.tmpl.html", data)
 		return
 	}
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Title, form.Content, expires)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.serverError(w, r, err)
 	}
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
