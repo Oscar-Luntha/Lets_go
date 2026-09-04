@@ -8,15 +8,16 @@ import (
 	"net/http"
 	"os"
 
-	"oscar.dev/github.com/lets_go/internal/models"
-
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
+	"oscar.dev/github.com/lets_go/internal/models"
 )
 
 type application struct {
 	logger        *slog.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -37,11 +38,13 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+	formDecoder := form.NewDecoder()
 
 	app := &application{
 		logger:        logger,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 	logger.Info("Starting server", "addr", *addr)
 	err = http.ListenAndServe(*addr, app.routes())
