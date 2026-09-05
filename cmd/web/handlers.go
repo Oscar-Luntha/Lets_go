@@ -88,3 +88,19 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	data.Snippet = snippet
 	app.render(w, r, http.StatusOK, "view.tmpl.html", data)
 }
+
+func (app *application) getUserSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Display a form for signinh up a new user...")
+}
+func (app *application) postUserSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Create a new user...")
+}
+func (app *application) getUserLogin(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display a form for logging in a user...")
+}
+func (app *application) postUserLogin(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Authenticate and login the user...")
+}
+func (app *application) postUserLogout(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Logout the user...")
+}
