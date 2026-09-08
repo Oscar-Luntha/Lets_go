@@ -4,15 +4,14 @@ import (
 	"net/http"
 
 	"github.com/justinas/alice"
+	"oscar.dev/github.com/lets_go/ui"
 )
 
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
-
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 	// Unprotected application routes using the "dynamic" middleware chain
-	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
 	mux.Handle("GET /snippet/view/{id}", dynamic.ThenFunc(app.snippetView))
